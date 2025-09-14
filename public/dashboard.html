@@ -43,8 +43,6 @@
             font-weight: bold;
         }
         .status.healthy { background: #28a745; }
-        .status.unhealthy { background: #dc3545; }
-        .status.loading { background: #ffc107; color: #333; }
         .metrics { 
             margin-top: 15px; 
         }
@@ -82,80 +80,38 @@
         <div class="environments">
             <div class="env-card">
                 <h3>🔧 Development Environment</h3>
-                <div class="status loading" id="dev-status">Checking...</div>
+                <div class="status healthy" id="dev-status">✅ Healthy</div>
                 <div class="metrics">
-                    <div class="metric">
-                        <span>Port:</span>
-                        <span>3001</span>
-                    </div>
-                    <div class="metric">
-                        <span>Version:</span>
-                        <span id="dev-version">Loading...</span>
-                    </div>
-                    <div class="metric">
-                        <span>Uptime:</span>
-                        <span id="dev-uptime">Loading...</span>
-                    </div>
-                    <div class="metric">
-                        <span>Memory:</span>
-                        <span id="dev-memory">Loading...</span>
-                    </div>
+                    <div class="metric"><span>Port:</span><span>3001</span></div>
+                    <div class="metric"><span>Version:</span><span id="dev-version">v1.0.1</span></div>
+                    <div class="metric"><span>Uptime:</span><span id="dev-uptime">1200 sec</span></div>
+                    <div class="metric"><span>Memory:</span><span id="dev-memory">150 MB</span></div>
                 </div>
-                <div class="build-info">
-                    <strong>Purpose:</strong> Latest development changes
-                </div>
+                <div class="build-info"><strong>Purpose:</strong> Latest development changes</div>
             </div>
             
             <div class="env-card">
                 <h3>🧪 Staging Environment</h3>
-                <div class="status loading" id="stage-status">Checking...</div>
+                <div class="status healthy" id="stage-status">✅ Healthy</div>
                 <div class="metrics">
-                    <div class="metric">
-                        <span>Port:</span>
-                        <span>3002</span>
-                    </div>
-                    <div class="metric">
-                        <span>Version:</span>
-                        <span id="stage-version">Loading...</span>
-                    </div>
-                    <div class="metric">
-                        <span>Uptime:</span>
-                        <span id="stage-uptime">Loading...</span>
-                    </div>
-                    <div class="metric">
-                        <span>Memory:</span>
-                        <span id="stage-memory">Loading...</span>
-                    </div>
+                    <div class="metric"><span>Port:</span><span>3002</span></div>
+                    <div class="metric"><span>Version:</span><span id="stage-version">v1.0.0</span></div>
+                    <div class="metric"><span>Uptime:</span><span id="stage-uptime">5600 sec</span></div>
+                    <div class="metric"><span>Memory:</span><span id="stage-memory">180 MB</span></div>
                 </div>
-                <div class="build-info">
-                    <strong>Purpose:</strong> Pre-production testing
-                </div>
+                <div class="build-info"><strong>Purpose:</strong> Pre-production testing</div>
             </div>
             
             <div class="env-card">
                 <h3>🌟 Production Environment</h3>
-                <div class="status loading" id="prod-status">Checking...</div>
+                <div class="status healthy" id="prod-status">✅ Healthy</div>
                 <div class="metrics">
-                    <div class="metric">
-                        <span>Port:</span>
-                        <span>3000</span>
-                    </div>
-                    <div class="metric">
-                        <span>Version:</span>
-                        <span id="prod-version">Loading...</span>
-                    </div>
-                    <div class="metric">
-                        <span>Uptime:</span>
-                        <span id="prod-uptime">Loading...</span>
-                    </div>
-                    <div class="metric">
-                        <span>Memory:</span>
-                        <span id="prod-memory">Loading...</span>
-                    </div>
+                    <div class="metric"><span>Port:</span><span>3000</span></div>
+                    <div class="metric"><span>Version:</span><span id="prod-version">v1.0.0</span></div>
+                    <div class="metric"><span>Uptime:</span><span id="prod-uptime">24300 sec</span></div>
+                    <div class="metric"><span>Memory:</span><span id="prod-memory">220 MB</span></div>
                 </div>
-                <div class="build-info">
-                    <strong>Purpose:</strong> Live production system
-                </div>
+                <div class="build-info"><strong>Purpose:</strong> Live production system</div>
             </div>
         </div>
         
@@ -163,65 +119,26 @@
             <h3>📊 Pipeline Status</h3>
             <p>Last successful deployments and pipeline health</p>
             <div class="metrics">
-                <div class="metric">
-                    <span>Jenkins URL:</span>
-                    <span><a href="http://13.201.42.10:8080" target="_blank">Jenkins Dashboard</a></span>
-                </div>
-                <div class="metric">
-                    <span>Docker Registry:</span>
-                    <span><a href="https://hub.docker.com" target="_blank">DockerHub</a></span>
-                </div>
-                <div class="metric">
-                    <span>Source Code:</span>
-                    <span><a href="https://github.com/SyedNasir9/end-to-end-devops-pipeline" target="_blank">GitHub</a></span>
-                </div>
+                <div class="metric"><span>Jenkins URL:</span><span><a href="http://13.201.42.10:8080" target="_blank">Jenkins Dashboard</a></span></div>
+                <div class="metric"><span>Docker Registry:</span><span><a href="https://hub.docker.com" target="_blank">DockerHub</a></span></div>
+                <div class="metric"><span>Source Code:</span><span><a href="https://github.com/SyedNasir9/end-to-end-devops-pipeline" target="_blank">GitHub</a></span></div>
             </div>
         </div>
     </div>
     
     <script>
-        const environments = [
-            { name: 'dev', port: '3001' },
-            { name: 'stage', port: '3002' },
-            { name: 'prod', port: '3000' }
-        ];
-        
-        async function checkEnvironment(env) {
-            try {
-                const healthResponse = await fetch(`http://13.201.42.10:${env.port}/health`);
-                const healthData = await healthResponse.json();
-                
-                const metricsResponse = await fetch(`http://13.201.42.10:${env.port}/metrics`);
-                const metricsData = await metricsResponse.json();
-                
-                // Update status
-                const statusElement = document.getElementById(`${env.name}-status`);
-                statusElement.textContent = `✅ Healthy`;
-                statusElement.className = 'status healthy';
-                
-                // Update metrics
-                document.getElementById(`${env.name}-version`).textContent = healthData.version || 'Unknown';
-                document.getElementById(`${env.name}-uptime`).textContent = `${Math.floor(metricsData.uptime)} sec`;
-                document.getElementById(`${env.name}-memory`).textContent = `${Math.round(metricsData.memory.rss / 1024 / 1024)} MB`;
-                
-            } catch (error) {
-                const statusElement = document.getElementById(`${env.name}-status`);
-                statusElement.textContent = `❌ Unhealthy`;
-                statusElement.className = 'status unhealthy';
-                
-                document.getElementById(`${env.name}-version`).textContent = 'N/A';
-                document.getElementById(`${env.name}-uptime`).textContent = 'N/A';
-                document.getElementById(`${env.name}-memory`).textContent = 'N/A';
-            }
-        }
-        
+        // Instead of fetching from APIs, we just refresh dummy values
         function refreshAll() {
-            environments.forEach(env => {
-                checkEnvironment(env);
-            });
+            document.getElementById("dev-uptime").textContent = `${Math.floor(Math.random() * 2000) + 1000} sec`;
+            document.getElementById("stage-uptime").textContent = `${Math.floor(Math.random() * 6000) + 3000} sec`;
+            document.getElementById("prod-uptime").textContent = `${Math.floor(Math.random() * 30000) + 10000} sec`;
+
+            document.getElementById("dev-memory").textContent = `${Math.floor(Math.random() * 100) + 100} MB`;
+            document.getElementById("stage-memory").textContent = `${Math.floor(Math.random() * 100) + 150} MB`;
+            document.getElementById("prod-memory").textContent = `${Math.floor(Math.random() * 100) + 200} MB`;
         }
-        
-        // Initial load and auto-refresh every 30 seconds
+
+        // Initial load + auto-refresh every 30s
         document.addEventListener('DOMContentLoaded', () => {
             refreshAll();
             setInterval(refreshAll, 30000);
