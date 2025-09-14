@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DevOps CI/CD Pipeline Demo</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🚀 DevOps CI/CD Pipeline</h1>
+            <p>Automated Build → Test → Deploy → Monitor</p>
+        </header>
+        
+        <main>
+            <div class="pipeline-status" id="pipelineStatus">
+                <h2>Pipeline Status</h2>
+                <div class="status-indicator" id="healthStatus">Checking...</div>
+            </div>
+            
+            <div class="metrics-section">
+                <h2>Application Metrics</h2>
+                <div class="metrics-grid" id="metricsGrid">
+                    <div class="metric">
+                        <span class="metric-label">Version:</span>
+                        <span class="metric-value" id="version">Loading...</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">Uptime:</span>
+                        <span class="metric-value" id="uptime">Loading...</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">Memory Usage:</span>
+                        <span class="metric-value" id="memory">Loading...</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="environment-info">
+                <h2>Environment: <span id="environment">Production</span></h2>
+                <p>This application was deployed using Jenkins CI/CD pipeline with Docker containers on AWS EC2.</p>
+            </div>
+        </main>
+    </div>
+    
+    <script src="script.js"></script>
+</body>
+</html>

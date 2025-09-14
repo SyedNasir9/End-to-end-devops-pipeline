@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="jest tests" tests="5" failures="0" errors="0" time="1.85">
+  <testsuite name="Application Tests" errors="0" failures="0" skipped="0" timestamp="2025-09-14T05:57:48" time="1.351" tests="3">
+    <testcase classname="Application Tests Health endpoint should return 200" name="Application Tests Health endpoint should return 200" time="0.043">
+    </testcase>
+    <testcase classname="Application Tests Root endpoint should return HTML" name="Application Tests Root endpoint should return HTML" time="0.027">
+    </testcase>
+    <testcase classname="Application Tests Metrics JSON endpoint should return JSON" name="Application Tests Metrics JSON endpoint should return JSON" time="0.011">
+    </testcase>
+  </testsuite>
+  <testsuite name="Health &amp; Status" errors="0" failures="0" skipped="0" timestamp="2025-09-14T05:57:49" time="0.328" tests="2">
+    <testcase classname="Health &amp; Status GET /health returns 200" name="Health &amp; Status GET /health returns 200" time="0.03">
+    </testcase>
+    <testcase classname="Health &amp; Status GET /status returns JSON with deploy_tag" name="Health &amp; Status GET /status returns JSON with deploy_tag" time="0.01">
+    </testcase>
+  </testsuite>
+</testsuites>
