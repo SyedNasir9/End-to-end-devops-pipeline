@@ -66,6 +66,9 @@ pipeline {
                         def img = docker.image(env.DOCKER_IMAGE)
                         img.push()
                         img.push("${env.BRANCH_NAME}-latest")
+
+                        // Notify that image was pushed
+                        notify("🐳 Image Pushed", "Image: ${env.DOCKER_IMAGE}\nTagged as: ${env.BRANCH_NAME}-latest", "good")
                     }
                 }
             }
@@ -78,7 +81,22 @@ pipeline {
                     if (env.BRANCH_NAME == 'dev') deployPort = env.DEV_PORT
                     if (env.BRANCH_NAME == 'stage') deployPort = env.STAGE_PORT
 
+                    // Use ssh agent to query remote host for currently deployed image (so rollback knows previous tag)
                     sshagent([env.SSH_CREDENTIALS]) {
+                        // Grab previous deployed image (if container exists). Fallback will be handled later.
+                        def prev = sh(script:
+                            'ssh -o StrictHostKeyChecking=no ' + env.EC2_HOST +
+                            " \"if [ \\$(docker ps -a -q -f name=${APP_NAME}-${env.BRANCH_NAME}) ]; then docker inspect --format='{{.Config.Image}}' ${APP_NAME}-${env.BRANCH_NAME} || echo ''; else echo ''; fi\" ",
+                            returnStdout: true
+                        ).trim()
+
+                        env.PREVIOUS_TAG = prev ?: "${env.BRANCH_NAME}-latest"
+                        echo "Previous deployed image detected: '${env.PREVIOUS_TAG}'"
+
+                        // Notify deploy start
+                        notify("🚀 Deploy Starting", "Deploying: ${env.DOCKER_IMAGE}\nTo: ${env.EC2_HOST}:${deployPort}\nPrevious: ${env.PREVIOUS_TAG}", "good")
+
+                        // Pull new image, remove old container if exists, then run new container
                         sh """
                             ssh -o StrictHostKeyChecking=no ${env.EC2_HOST} '
                                 docker pull ${env.DOCKER_IMAGE} &&
@@ -117,6 +135,7 @@ pipeline {
                     }
                     if (!success) {
                         echo "❌ Health failed after ${maxRetries} attempts — rolling back"
+                        // call rollback with port
                         rollback(port)
                         error("Health check failed; rollback attempted")
                     }
@@ -138,21 +157,33 @@ pipeline {
     }
 }
 
+// rollback uses env.PREVIOUS_TAG captured during Deploy stage (fallback to branch-latest)
 def rollback(port) {
     echo "🔄 Rolling back ${env.BRANCH_NAME}"
+    def toTag = env.PREVIOUS_TAG?.trim()
+    if (!toTag) {
+        toTag = "${env.BRANCH_NAME}-latest"
+        echo "No previous tag detected; falling back to ${toTag}"
+    } else {
+        echo "Rolling back to ${toTag}"
+    }
+
+    // notify rollback start
+    notify("⚠️ Rollback Started", "Rolling back ${env.BRANCH_NAME} to ${toTag}", "warning")
+
     sshagent([env.SSH_CREDENTIALS]) {
         sh """
             ssh -o StrictHostKeyChecking=no ${env.EC2_HOST} '
-                docker pull ${DOCKERHUB_REPO}:${env.BRANCH_NAME}-latest &&
+                docker pull ${DOCKERHUB_REPO}:${toTag} &&
                 if [ \$(docker ps -a -q -f name=${APP_NAME}-${env.BRANCH_NAME}) ]; then
                    docker rm -f ${APP_NAME}-${env.BRANCH_NAME}
                 fi &&
                 docker run -d --name ${APP_NAME}-${env.BRANCH_NAME} -p ${port}:3000 \
-                    -e APP_VERSION=rollback -e NODE_ENV=${env.BRANCH_NAME} --restart unless-stopped ${DOCKERHUB_REPO}:${env.BRANCH_NAME}-latest
+                    -e APP_VERSION=${toTag} -e NODE_ENV=${env.BRANCH_NAME} --restart unless-stopped ${DOCKERHUB_REPO}:${toTag}
             '
         """
     }
-    notify("🔄 Rollback Completed", "Branch ${env.BRANCH_NAME} rolled back to ${env.BRANCH_NAME}-latest", "warning")
+    notify("🔄 Rollback Completed", "Branch ${env.BRANCH_NAME} rolled back to ${toTag}", "warning")
 }
 
 def notify(String title, String message, String color) {
