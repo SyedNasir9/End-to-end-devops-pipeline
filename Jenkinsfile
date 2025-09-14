@@ -9,7 +9,7 @@ pipeline {
         STAGE_PORT = '3002'
         PROD_PORT = '3000'
 
-        EC2_HOST = 'ubuntu@43.204.28.38'                     // replace with your EC2 host
+        EC2_HOST = 'ubuntu@3.109.183.207'                     // replace with your EC2 host
         SSH_CREDENTIALS = 'ec2-ssh-key'                      // Jenkins credentials id for SSH key
         DOCKERHUB_CREDENTIALS_ID = 'dockerhub-credentials'   // Jenkins credentials id (username/password)
         EMAIL_RECIPIENT = 'nasirsyed652@gmail.com'
