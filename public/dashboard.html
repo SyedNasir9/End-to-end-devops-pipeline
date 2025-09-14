@@ -165,7 +165,7 @@
             <div class="metrics">
                 <div class="metric">
                     <span>Jenkins URL:</span>
-                    <span><a href="http://13.201.42.10:8080" target="_blank">Jenkins Dashboard</a></span>
+                    <span><a href="http://3.109.183.207:8080" target="_blank">Jenkins Dashboard</a></span>
                 </div>
                 <div class="metric">
                     <span>Docker Registry:</span>
@@ -188,10 +188,10 @@
         
         async function checkEnvironment(env) {
             try {
-                const healthResponse = await fetch(`http://13.201.42.10:${env.port}/health`);
+                const healthResponse = await fetch(`http://3.109.183.207:${env.port}/health`);
                 const healthData = await healthResponse.json();
                 
-                const metricsResponse = await fetch(`http://13.201.42.10:${env.port}/metrics`);
+                const metricsResponse = await fetch(`http://3.109.183.207:${env.port}/metrics`);
                 const metricsData = await metricsResponse.json();
                 
                 // Update status
