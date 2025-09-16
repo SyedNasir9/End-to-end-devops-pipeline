@@ -10,7 +10,7 @@ pipeline {
         PROD_PORT = '3000'
 
         EC2_HOST = 'ubuntu@3.109.183.207'                    
-        SSH_CREDENTIALS = 'ec2-ssh-key'                      // Jenkins credentials id for SSH key
+        SSH_CREDENTIALS = 'ec2-ssh-key'                      // Jenkins credentials id for SSH key 
         DOCKERHUB_CREDENTIALS_ID = 'dockerhub-credentials'   // Jenkins credentials id (username/password)
         EMAIL_RECIPIENT = 'nasirsyed652@gmail.com'
         SLACK_CHANNEL = '#devops'
