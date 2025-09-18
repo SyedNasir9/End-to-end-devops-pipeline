@@ -2,15 +2,15 @@ pipeline {
     agent any
 
     environment {
-        DOCKERHUB_REPO = 'syednasir9/devops-pipeline'        // replace if needed
+        DOCKERHUB_REPO = 'syednasir9/devops-pipeline'
         APP_NAME = 'devops-pipeline'
 
         DEV_PORT = '3001'
         STAGE_PORT = '3002'
         PROD_PORT = '3000'
 
-        EC2_HOST = 'ubuntu@3.109.183.207'                    
-        SSH_CREDENTIALS = 'ec2-ssh-key'                      // Jenkins credentials id for SSH key 
+        EC2_HOST = 'ubuntu@3.109.183.207'                     // replace with your EC2 host
+        SSH_CREDENTIALS = 'ec2-ssh-key'                      // Jenkins credentials id for SSH key
         DOCKERHUB_CREDENTIALS_ID = 'dockerhub-credentials'   // Jenkins credentials id (username/password)
         EMAIL_RECIPIENT = 'nasirsyed652@gmail.com'
         SLACK_CHANNEL = '#devops'
@@ -66,6 +66,9 @@ pipeline {
                         def img = docker.image(env.DOCKER_IMAGE)
                         img.push()
                         img.push("${env.BRANCH_NAME}-latest")
+
+                        // Slack notification for Docker push
+                        notify("🐳 Image Pushed", "Image: ${env.DOCKER_IMAGE}\nTagged as: ${env.BRANCH_NAME}-latest", "good")
                     }
                 }
             }
@@ -79,16 +82,30 @@ pipeline {
                     if (env.BRANCH_NAME == 'stage') deployPort = env.STAGE_PORT
 
                     sshagent([env.SSH_CREDENTIALS]) {
-                        sh """
-                            ssh -o StrictHostKeyChecking=no ${env.EC2_HOST} '
-                                docker pull ${env.DOCKER_IMAGE} &&
-                                if [ \$(docker ps -a -q -f name=${APP_NAME}-${env.BRANCH_NAME}) ]; then
-                                   docker rm -f ${APP_NAME}-${env.BRANCH_NAME}
-                                fi &&
-                                docker run -d --name ${APP_NAME}-${env.BRANCH_NAME} -p ${deployPort}:3000 \
-                                    -e APP_VERSION=${env.DOCKER_TAG} -e NODE_ENV=${env.BRANCH_NAME} --restart unless-stopped ${env.DOCKER_IMAGE}
-                            '
-                        """
+                        // Grab previous deployed image safely
+                        def prev = sh(script: """ssh -o StrictHostKeyChecking=no ${env.EC2_HOST} '
+if [ \$(docker ps -a -q -f name=${APP_NAME}-${env.BRANCH_NAME}) ]; then
+    docker inspect --format="{{.Config.Image}}" ${APP_NAME}-${env.BRANCH_NAME} || echo ''
+else
+    echo ''
+fi
+'""", returnStdout: true).trim()
+
+                        env.PREVIOUS_TAG = prev ?: "${env.BRANCH_NAME}-latest"
+                        echo "Previous deployed image: '${env.PREVIOUS_TAG}'"
+
+                        // Slack notification for deploy start
+                        notify("🚀 Deploy Starting", "Deploying: ${env.DOCKER_IMAGE}\nTo: ${env.EC2_HOST}:${deployPort}\nPrevious: ${env.PREVIOUS_TAG}", "good")
+
+                        // Run new container
+                        sh """ssh -o StrictHostKeyChecking=no ${env.EC2_HOST} '
+docker pull ${env.DOCKER_IMAGE} &&
+if [ \$(docker ps -a -q -f name=${APP_NAME}-${env.BRANCH_NAME}) ]; then
+    docker rm -f ${APP_NAME}-${env.BRANCH_NAME}
+fi &&
+docker run -d --name ${APP_NAME}-${env.BRANCH_NAME} -p ${deployPort}:3000 \
+    -e APP_VERSION=${env.DOCKER_TAG} -e NODE_ENV=${env.BRANCH_NAME} --restart unless-stopped ${env.DOCKER_IMAGE}
+'"""
                     }
                 }
             }
@@ -138,21 +155,33 @@ pipeline {
     }
 }
 
+// rollback uses env.PREVIOUS_TAG captured during Deploy stage
 def rollback(port) {
     echo "🔄 Rolling back ${env.BRANCH_NAME}"
-    sshagent([env.SSH_CREDENTIALS]) {
-        sh """
-            ssh -o StrictHostKeyChecking=no ${env.EC2_HOST} '
-                docker pull ${DOCKERHUB_REPO}:${env.BRANCH_NAME}-latest &&
-                if [ \$(docker ps -a -q -f name=${APP_NAME}-${env.BRANCH_NAME}) ]; then
-                   docker rm -f ${APP_NAME}-${env.BRANCH_NAME}
-                fi &&
-                docker run -d --name ${APP_NAME}-${env.BRANCH_NAME} -p ${port}:3000 \
-                    -e APP_VERSION=rollback -e NODE_ENV=${env.BRANCH_NAME} --restart unless-stopped ${DOCKERHUB_REPO}:${env.BRANCH_NAME}-latest
-            '
-        """
+    def toTag = env.PREVIOUS_TAG?.trim()
+    if (!toTag) {
+        toTag = "${env.BRANCH_NAME}-latest"
+        echo "No previous tag detected; falling back to ${toTag}"
+    } else {
+        echo "Rolling back to ${toTag}"
     }
-    notify("🔄 Rollback Completed", "Branch ${env.BRANCH_NAME} rolled back to ${env.BRANCH_NAME}-latest", "warning")
+
+    // Slack notification for rollback start
+    notify("⚠️ Rollback Started", "Rolling back ${env.BRANCH_NAME} to ${toTag}", "warning")
+
+    sshagent([env.SSH_CREDENTIALS]) {
+        sh """ssh -o StrictHostKeyChecking=no ${env.EC2_HOST} '
+docker pull ${DOCKERHUB_REPO}:${toTag} &&
+if [ \$(docker ps -a -q -f name=${APP_NAME}-${env.BRANCH_NAME}) ]; then
+    docker rm -f ${APP_NAME}-${env.BRANCH_NAME}
+fi &&
+docker run -d --name ${APP_NAME}-${env.BRANCH_NAME} -p ${port}:3000 \
+    -e APP_VERSION=${toTag} -e NODE_ENV=${env.BRANCH_NAME} --restart unless-stopped ${DOCKERHUB_REPO}:${toTag}
+'"""
+    }
+
+    // Slack notification for rollback completed
+    notify("🔄 Rollback Completed", "Branch ${env.BRANCH_NAME} rolled back to ${toTag}", "warning")
 }
 
 def notify(String title, String message, String color) {
