@@ -1,6 +1,7 @@
 pipeline {
     agent any
 
+
     environment {
         DOCKERHUB_REPO = 'syednasir9/devops-pipeline'
         APP_NAME = 'devops-pipeline'
