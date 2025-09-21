@@ -312,12 +312,12 @@ graph LR
 │   └── Screenshots of Docker container builds, DockerHub registry, and image versions  
 ├── 🔐 Security & Integrations  
 │   └── Screenshots of AWS EC2 setup, SSH/Security Groups, and Slack/Email notifications  
-└── 🎥 Demo Video ( Drive :- https://drive.google.com/file/d/1ETC7XDdDVjijnXqlpkfeRFHKcPcvmWeo/view?usp=sharing) 
+└── 🎥 Demo Video
     └── Full pipeline execution walkthrough
 
 ```
 
-Demo Video ( Drive :- https://drive.google.com/file/d/1ETC7XDdDVjijnXqlpkfeRFHKcPcvmWeo/view?usp=sharing) 
+##  **Demo-Video** ( Drive :- https://drive.google.com/file/d/1ETC7XDdDVjijnXqlpkfeRFHKcPcvmWeo/view?usp=sharing ) 
 
 <div align="center">
 
