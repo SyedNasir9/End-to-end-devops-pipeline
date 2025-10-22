@@ -12,7 +12,7 @@ pipeline {
         EC2_HOST = 'ubuntu@3.109.183.207'
         SSH_CREDENTIALS = 'ec2-ssh-key'
         DOCKERHUB_CREDENTIALS_ID = 'dockerhub-credentials'
-        VAULT_ADDR = 'http://127.0.0.1:8200'   // your Vault server
+        VAULT_ADDR = 'http://127.0.0.1:8200'   
         EMAIL_RECIPIENT = 'nasirsyed652@gmail.com'
         SLACK_CHANNEL = '#devops'
     }
